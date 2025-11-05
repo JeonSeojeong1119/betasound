@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Beta Sound</title>
+  <style>
+    @font-face {
+      font-family: 'Pretendard-Medium';
+      src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/pretendard@1.0/Pretendard-Medium.woff2') format('woff2');
+      font-weight: 500;
+      font-display: swap;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      font-family: 'Pretendard-Medium', sans-serif;
+    }
+
+    p { font-size: 18px; line-height: 1.6; }
+
+    .drop-area {
+      flex: 1;
+      background-image: url("background.png");
+      background-repeat: no-repeat;
+      background-position: center center;
+      background-size: cover;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* ---------- 하단 바 ---------- */
+    .hover-bar {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: rgba(255,255,255,0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 25px;
+      padding: 15px 15px;
+      z-index: 1000;
+      border-radius: 20px;
+      backdrop-filter: blur(10px);
+    }
+
+    .hover-bar img {
+      height: 70px;
+      cursor: grab;
+      transition: transform 0.2s;
+    }
+    .hover-bar img:hover {
+      transform: scale(1.1);
+    }
+
+    /* ---------- 팝업 ---------- */
+    .popup {
+      position: fixed;
+      top: 45%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(255,255,255,0.5);
+      padding: 30px 40px;
+      border-radius: 20px;
+      display: none;
+      z-index: 2000;
+      width: 750px;
+      text-align: center;
+      backdrop-filter: blur(15px);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    }
+
+    .popup img.logo {
+      width: 300px;
+      display: block;
+      margin: 0 auto 20px auto;
+    }
+
+    .popup button {
+      background-color: #353636;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 12px 25px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .popup button:hover {
+      background-color: #555;
+    }
+
+    /* ---------- 두 번째 팝업 ---------- */
+    .popup-secondary {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(255,255,255,0.5);
+      padding: 25px 35px;
+      border-radius: 15px;
+      z-index: 2500;
+      display: none;
+      width: 750px;
+      text-align: center;
+      backdrop-filter: blur(15px);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    }
+
+    .popup-secondary button {
+      background-color: #353636;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 12px 25px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    /* ---------- 드래그된 아이콘 ---------- */
+    img.draggable {
+      position: absolute;
+      cursor: grab;
+      user-select: none;
+    }
+
+    /* ---------- 휴지통 ---------- */
+    #trash {
+      width: 70px;
+      height: auto;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+    #trash:hover {
+      transform: scale(1.2);
+    }
+
+  </style>
+</head>
+<body>
+
+  <div class="drop-area" id="dropArea"></div>
+
+  <!-- 첫 번째 팝업 -->
+  <div class="popup" id="popup">
+    <img src="logo.png" class="logo">
+    <p>무언가를 만드는 사람의 손끝에서는 다양한 소리들이 끊임없이 탄생합니다.<br>
+    이 소리들은 아직 완성되지 않았기에 더 생생하고, 무한한 가능성을 들려줍니다.<br>
+    각각은 단편적이고 불완전한 소리들일지 몰라도, 이들은 관람객의 손을 거쳐 겹쳐지고,<br>
+    배열되며 즉흥적인 하나의 사운드 풍경으로 만들어집니다.<br>
+    이러한 방식은 우리들의 창의적인 실험과 새로운 도전을 허용하는<br>
+    ‘베타 스페이스’의 모습과도 닮아 있으며, 완성된 하나의 결과물이 아닌<br>
+    계속해서 변화할 수 있는 조합을 관람객이 직접 체험해보게 됩니다.</p>
+    <button onclick="openSecondPopup()">체험방법</button>
+  </div>
+
+  <!-- 두 번째 팝업 -->
+  <div class="popup-secondary" id="popup2">
+    <h3>소리를 자유롭게 배치해보세요 🎧</h3>
+    <p>아래 아이콘들을 드래그해서 화면에 놓으면<br>각각의 소리가 어우러져 새로운 사운드 풍경이 만들어집니다.</p>
+    <p>삭제하고싶은 사운드는 쓰레기통에 드래그해주세요.</p>
+    <button onclick="closeSecondPopup()">시작하기</button>
+  </div>
+
+  <!-- 하단 아이콘 바 -->
+  <div class="hover-bar" id="hoverBar">
+    <img src="icon-b.png" onclick="openPopup()">
+    <img src="icon-barrow.png" draggable="true" ondragstart="drag(event)">
+    <img src="icon-cone.png" draggable="true" ondragstart="drag(event)">
+    <img src="icon-helmet.png" draggable="true" ondragstart="drag(event)">
+    <img src="icon-machine.png" draggable="true" ondragstart="drag(event)">
+    <img src="icon-roller.png" draggable="true" ondragstart="drag(event)">
+    <img src="icon-shovel.png" draggable="true" ondragstart="drag(event)">
+    <img id="trash" src="icon-bin1.png" ondragover="allowDrop(event)" ondrop="deleteIcon(event)" alt="trash">
+  </div>
+
+  <script>
+  const iconAssets = {
+    "icon-barrow.png": { img: "img-barrow.PNG", sound: "sound-click.mp3", size: 500, volume: 0.05 },
+    "icon-cone.png":   { img: "img-cone.PNG", sound: "sound-drawing.mp3", size: 200, volume: 0.8 },
+    "icon-helmet.png": { img: "img-helmet.PNG", sound: "sound-printer.mp3", size: 250, volume: 0.05 },
+    "icon-machine.png":{ img: "img-machine.PNG", sound: "sound-tape.mp3", size: 700, volume: 1.0 },
+    "icon-roller.png": { img: "img-roller.PNG", sound: "sound-tear.mp3", size: 220, volume: 0.01 },
+    "icon-shovel.png": { img: "img-shovel.PNG", sound: "sound-typing.mp3", size: 300, volume: 1.0 }
+  };
+
+  const dropArea = document.getElementById('dropArea');
+  const audioMap = new Map();
+
+  function openPopup() {
+    document.getElementById("popup").style.display = "block";
+  }
+  function closePopup() {
+    document.getElementById("popup").style.display = "none";
+  }
+
+  function openSecondPopup() {
+    closePopup();
+    document.getElementById("popup2").style.display = "block";
+  }
+  function closeSecondPopup() {
+    document.getElementById("popup2").style.display = "none";
+  }
+
+  function allowDrop(event) {
+    event.preventDefault();
+  }
+
+  function drag(event) {
+    event.dataTransfer.setData("src", event.target.src);
+  }
+
+  dropArea.addEventListener("dragover", allowDrop);
+
+  dropArea.addEventListener("drop", function(event) {
+    event.preventDefault();
+    const src = event.dataTransfer.getData("src");
+    const filename = src.split("/").pop();
+    const asset = iconAssets[filename];
+
+    if (asset) {
+      const newImg = document.createElement("img");
+      newImg.src = asset.img;
+      newImg.className = "draggable";
+      newImg.id = "icon-" + Date.now();
+      newImg.style.width = asset.size + "px";
+      newImg.style.left = (event.offsetX - asset.size / 2) + "px";
+      newImg.style.top = (event.offsetY - asset.size / 2) + "px";
+      dropArea.appendChild(newImg);
+
+      makeMovable(newImg);
+
+      const audio = new Audio(asset.sound);
+      audio.volume = Math.min(1, asset.volume);
+      audio.loop = true;
+      audio.play();
+
+      audioMap.set(newImg.id, audio);
+
+      newImg.draggable = true;
+      newImg.addEventListener("dragstart", e => {
+        e.dataTransfer.setData("iconId", newImg.id);
+      });
+    }
+  });
+
+  function makeMovable(el) {
+    let offsetX, offsetY, isDragging = false;
+    el.addEventListener("mousedown", e => {
+      isDragging = true;
+      offsetX = e.offsetX;
+      offsetY = e.offsetY;
+      el.style.cursor = "grabbing";
+    });
+    document.addEventListener("mousemove", e => {
+      if (isDragging) {
+        const rect = dropArea.getBoundingClientRect();
+        el.style.left = (e.clientX - rect.left - offsetX) + "px";
+        el.style.top = (e.clientY - rect.top - offsetY) + "px";
+      }
+    });
+    document.addEventListener("mouseup", () => {
+      isDragging = false;
+      el.style.cursor = "grab";
+    });
+  }
+
+  function deleteIcon(event) {
+    event.preventDefault();
+    const iconId = event.dataTransfer.getData("iconId");
+    if (iconId) {
+      const dragged = document.getElementById(iconId);
+      if (dragged) {
+        const audio = audioMap.get(iconId);
+        if (audio) {
+          audio.pause();
+          audio.currentTime = 0;
+          audioMap.delete(iconId);
+        }
+        dragged.remove();
+      }
+    }
+  }
+  </script>
+</body>
+</html>
